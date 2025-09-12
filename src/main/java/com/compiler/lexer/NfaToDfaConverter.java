@@ -11,97 +11,129 @@ import com.compiler.lexer.nfa.State;
 /**
  * NfaToDfaConverter
  * -----------------
- * This class provides a static method to convert a Non-deterministic Finite Automaton (NFA)
- * into a Deterministic Finite Automaton (DFA) using the standard subset construction algorithm.
- */
-/**
- * Utility class for converting NFAs to DFAs using the subset construction algorithm.
+ * Converts a given NFA into an equivalent DFA
+ * using the subset construction algorithm.
  */
 public class NfaToDfaConverter {
-	/**
-	 * Default constructor for NfaToDfaConverter.
-	 */
-		public NfaToDfaConverter() {
-			// TODO: Implement constructor if needed
-		}
 
-	/**
-	 * Converts an NFA to a DFA using the subset construction algorithm.
-	 * Each DFA state represents a set of NFA states. Final states are marked if any NFA state in the set is final.
-	 *
-	 * @param nfa The input NFA
-	 * @param alphabet The input alphabet (set of characters)
-	 * @return The resulting DFA
-	 */
-	public static DFA convertNfaToDfa(NFA nfa, Set<Character> alphabet) {
-		// TODO: Implement convertNfaToDfa
-		/*
-		 Pseudocode:
-		 1. Create initial DFA state from epsilon-closure of NFA start state
-		 2. While there are unmarked DFA states:
-			  - For each symbol in alphabet:
-				  - Compute move and epsilon-closure for current DFA state
-				  - If target set is new, create new DFA state and add to list/queue
-				  - Add transition from current to target DFA state
-		 3. Mark DFA states as final if any NFA state in their set is final
-		 4. Return DFA with start state and all DFA states
-		*/
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /**
+     * Default constructor.
+     * No initialization is required since all methods are static.
+     */
+    public NfaToDfaConverter() {
+        // No initialization needed
+    }
 
-	/**
-	 * Computes the epsilon-closure of a set of NFA states.
-	 * The epsilon-closure is the set of states reachable by epsilon (null) transitions.
-	 *
-	 * @param states The set of NFA states.
-	 * @return The epsilon-closure of the input states.
-	 */
-	private static Set<State> epsilonClosure(Set<State> states) {
-	// TODO: Implement epsilonClosure
-	/*
-	 Pseudocode:
-	 1. Initialize closure with input states
-	 2. Use stack to process states
-	 3. For each state, add all reachable states via epsilon transitions
-	 4. Return closure set
-	*/
-	throw new UnsupportedOperationException("Not implemented");
-	}
+    /**
+     * Converts an NFA into a DFA using the subset construction algorithm.
+     *
+     * @param nfa The NFA to be converted.
+     * @param alphabet The input alphabet for the automaton.
+     * @return A DFA equivalent to the given NFA.
+     */
+    public static DFA convertNfaToDfa(NFA nfa, Set<Character> alphabet) {
+        // List of DFA states
+        List<DfaState> dfaStates = new java.util.ArrayList<>();
 
-	/**
-	 * Returns the set of states reachable from a set of NFA states by a given symbol.
-	 *
-	 * @param states The set of NFA states.
-	 * @param symbol The input symbol.
-	 * @return The set of reachable states.
-	 */
-	private static Set<State> move(Set<State> states, char symbol) {
-		// TODO: Implement move
-		/*
-		 Pseudocode:
-		 1. For each state in input set:
-			  - For each transition with given symbol:
-				  - Add destination state to result set
-		 2. Return result set
-		*/
-		throw new UnsupportedOperationException("Not implemented");
-	}
+        // Initial DFA state: epsilon-closure of the NFA start state
+        Set<State> startClosure = epsilonClosure(java.util.Collections.singleton(nfa.startState));
+        DfaState startDfaState = new DfaState(startClosure);
+        dfaStates.add(startDfaState);
 
-	/**
-	 * Finds an existing DFA state representing a given set of NFA states.
-	 *
-	 * @param dfaStates The list of DFA states.
-	 * @param targetNfaStates The set of NFA states to search for.
-	 * @return The matching DFA state, or null if not found.
-	 */
-	private static DfaState findDfaState(List<DfaState> dfaStates, Set<State> targetNfaStates) {
-	   // TODO: Implement findDfaState
-	   /*
-	    Pseudocode:
-	    1. For each DFA state in list:
-		    - If its NFA state set equals target set, return DFA state
-	    2. If not found, return null
-	   */
-	   throw new UnsupportedOperationException("Not implemented");
-	}
+        // Queue for processing unmarked DFA states
+        java.util.Queue<DfaState> queue = new java.util.LinkedList<>();
+        queue.add(startDfaState);
+
+        while (!queue.isEmpty()) {
+            DfaState currentDfa = queue.poll();
+
+            // Process each symbol in the alphabet
+            for (char symbol : alphabet) {
+                Set<State> moveResult = move(currentDfa.getNfaStates(), symbol);
+                Set<State> closureResult = epsilonClosure(moveResult);
+
+                if (closureResult.isEmpty()) continue;
+
+                // Check if this set of NFA states already corresponds to an existing DFA state
+                DfaState existing = findDfaState(dfaStates, closureResult);
+                if (existing == null) {
+                    DfaState newDfa = new DfaState(closureResult);
+                    dfaStates.add(newDfa);
+                    queue.add(newDfa);
+                    existing = newDfa;
+                }
+
+                // Add DFA transition
+                currentDfa.addTransition(symbol, existing);
+            }
+        }
+
+        // Mark DFA states as final if any of their NFA states are final
+        for (DfaState dfa : dfaStates) {
+            for (State nfaState : dfa.getNfaStates()) {
+                if (nfaState.isFinal) {
+                    dfa.setFinal(true);
+                    break;
+                }
+            }
+        }
+
+        return new DFA(startDfaState, dfaStates);
+    }
+
+    /**
+     * Computes the epsilon-closure of a set of NFA states.
+     *
+     * @param states The initial set of NFA states.
+     * @return The epsilon-closure including all states reachable via epsilon transitions.
+     */
+    private static Set<State> epsilonClosure(Set<State> states) {
+        Set<State> closure = new java.util.HashSet<>(states);
+        java.util.Stack<State> stack = new java.util.Stack<>();
+        for (State s : states) stack.push(s);
+
+        while (!stack.isEmpty()) {
+            State state = stack.pop();
+            for (State target : state.getEpsilonTransitions()) {
+                if (!closure.contains(target)) {
+                    closure.add(target);
+                    stack.push(target);
+                }
+            }
+        }
+        return closure;
+    }
+
+    /**
+     * Computes the set of NFA states reachable from a given set of states
+     * on a specific input symbol.
+     *
+     * @param states The current set of NFA states.
+     * @param symbol The input symbol to process.
+     * @return The set of reachable NFA states.
+     */
+    private static Set<State> move(Set<State> states, char symbol) {
+        Set<State> result = new java.util.HashSet<>();
+        for (State state : states) {
+            for (State target : state.getTransitions(symbol)) {
+                result.add(target);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Searches for an existing DFA state that corresponds to
+     * the given set of NFA states.
+     *
+     * @param dfaStates The list of DFA states created so far.
+     * @param targetNfaStates The set of NFA states to search for.
+     * @return The matching DFA state if found, otherwise {@code null}.
+     */
+    private static DfaState findDfaState(List<DfaState> dfaStates, Set<State> targetNfaStates) {
+        for (DfaState dfa : dfaStates) {
+            if (dfa.getNfaStates().equals(targetNfaStates)) return dfa;
+        }
+        return null;
+    }
 }

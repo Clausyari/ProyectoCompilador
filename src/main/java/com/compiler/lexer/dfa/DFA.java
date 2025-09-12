@@ -18,15 +18,15 @@ public class DFA {
      * A list of all states in the DFA.
      */
     public final List<DfaState> allStates;
-    // Optionally, a Set<Character> for the alphabet could be added.
 
     /**
-     * Constructs a new DFA.
+     * Constructs a new DFA with a given start state and list of all states.
+     *
      * @param startState The starting state of the DFA.
-     * @param allStates  A list of all states in the DFA.
+     * @param allStates  A list of all DFA states.
      */
     public DFA(DfaState startState, List<DfaState> allStates) {
-        //TODO: Implement DFA construction logic.
-        throw new UnsupportedOperationException("DFA construction is not supported yet.");
+        this.startState = startState;
+        this.allStates = allStates;
     }
 }
