@@ -32,7 +32,7 @@ public class NfaSimulator {
         }
 
         for (State state : currentStates) {
-            // Solo aceptar si el estado final está marcado como tal
+            // Only accept if the final state is marked as such
             if (state.isFinal()) {
                 return true;
             }

@@ -29,4 +29,37 @@ public class DFA {
         this.startState = startState;
         this.allStates = allStates;
     }
+
+    /**
+     * Returns all states of the DFA.
+     * @return List of DFA states.
+     */
+    public List<DfaState> getAllStates() {
+        return allStates;
+    }
+
+    /**
+     * Finds a DFA state by its ID.
+     * Useful for debugging or inspection.
+     * 
+     * @param id The ID of the DFA state.
+     * @return The DfaState with the given ID, or null if not found.
+     */
+    public DfaState getStateById(int id) {
+        for (DfaState state : allStates) {
+            if (state.id == id) {
+                return state;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a string representation of the DFA,
+     * showing the start state and all states.
+     */
+    @Override
+    public String toString() {
+        return "DFA{startState=" + startState + ", totalStates=" + allStates.size() + "}";
+    }
 }

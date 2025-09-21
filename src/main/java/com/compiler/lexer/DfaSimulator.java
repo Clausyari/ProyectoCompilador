@@ -51,4 +51,30 @@ public class DfaSimulator {
 
         return currentState.isFinal();
     }
+
+    /**
+     * Simulates the DFA and returns the token type if accepted.
+     *
+     * @param dfa   The DFA to simulate.
+     * @param input The input string.
+     * @return The token type if the input is accepted, null otherwise.
+     */
+    public Token recognizeToken(DFA dfa, String input) {
+        DfaState currentState = dfa.startState;
+
+        for (int i = 0; i < input.length(); i++) {
+            char symbol = input.charAt(i);
+            DfaState nextState = currentState.getTransition(symbol);
+            if (nextState == null) {
+                return null; // Invalid transition → reject
+            }
+            currentState = nextState;
+        }
+
+        if (currentState.isFinal()) {
+            return currentState.getToken();
+        } else {
+            return null; // not a valid token
+        }
+    }
 }

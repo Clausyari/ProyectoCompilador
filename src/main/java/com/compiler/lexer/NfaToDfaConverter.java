@@ -23,7 +23,7 @@ public class NfaToDfaConverter {
     public NfaToDfaConverter() {
         // No initialization needed
     }
-
+    
     /**
      * Converts an NFA into a DFA using the subset construction algorithm.
      *
@@ -34,6 +34,9 @@ public class NfaToDfaConverter {
     public static DFA convertNfaToDfa(NFA nfa, Set<Character> alphabet) {
         // List of DFA states
         List<DfaState> dfaStates = new java.util.ArrayList<>();
+
+        // Define token priority for final states (highest to lowest)
+        String[] priority = {"KEYWORD", "IDENTIFIER", "NUMBER"};
 
         // Initial DFA state: epsilon-closure of the NFA start state
         Set<State> startClosure = epsilonClosure(java.util.Collections.singleton(nfa.startState));
@@ -70,14 +73,30 @@ public class NfaToDfaConverter {
 
         // Mark DFA states as final if any of their NFA states are final
         for (DfaState dfa : dfaStates) {
+            boolean anyFinal = false;
+            Token selectedToken = null;
+            int highestPriority = priority.length;
+
             for (State nfaState : dfa.getNfaStates()) {
-                if (nfaState.isFinal) {
-                    dfa.setFinal(true);
-                    break;
+                if (nfaState.isFinal()) {
+                    anyFinal = true;
+
+                    // Optional token selection by priority
+                    String type = nfaState.getTokenType(); // assumed available
+                    int pr = java.util.Arrays.asList(priority).indexOf(type);
+                    if (pr != -1 && pr < highestPriority) {
+                        selectedToken = new Token(type, "", -1);
+                        highestPriority = pr;
+                    }
                 }
             }
-        }
 
+            //Always mark end if there is a final NFA, even if no token is selected.
+            dfa.setFinal(anyFinal);
+            if (anyFinal && selectedToken != null) {
+                dfa.setToken(selectedToken);
+            }
+        }
         return new DFA(startDfaState, dfaStates);
     }
 

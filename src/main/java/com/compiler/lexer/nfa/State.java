@@ -8,7 +8,7 @@ import java.util.List;
  * and a flag indicating whether it is a final (accepting) state.
  */
 public class State {
-    private static int nextId = 0;
+    public static int nextId = 0;
 
     /**
      * Unique identifier for this state.
@@ -25,6 +25,11 @@ public class State {
      */
     public boolean isFinal;
 
+    /** 
+     * Type of token recognized by this state (if final). 
+     */
+    private String tokenType;
+
     /**
      * Constructs a new state with a unique identifier and no transitions.
      * The state is not final by default.
@@ -33,15 +38,30 @@ public class State {
         this.id = nextId++;
         this.transitions = new java.util.LinkedList<>();
         this.isFinal = false;
+        this.tokenType = null;
     }
 
     /**
      * Checks if this state is a final (accepting) state.
-     *
      * @return true if this state is final, false otherwise
      */
     public boolean isFinal() {
         return this.isFinal;
+    }
+
+    /** Gets the token type of this state (null if not final). 
+     * 
+     * @return 
+     */
+    public String getTokenType() { 
+        return tokenType; 
+    }
+
+    /** 
+     * Sets the token type for this state (only meaningful if final).
+     */
+    public void setTokenType(String tokenType) {
+        this.tokenType = tokenType;
     }
 
     /**

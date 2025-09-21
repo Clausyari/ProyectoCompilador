@@ -3,6 +3,7 @@ package com.compiler.lexer.dfa;
 import java.util.Map;
 import java.util.Set;
 
+import com.compiler.lexer.Token;
 import com.compiler.lexer.nfa.State;
 
 /**
@@ -40,6 +41,12 @@ public class DfaState {
     private static int nextId = 0;
 
     /**
+     * The type of token recognized by this state if it is final.
+     * Null if the state is not final.
+     */
+    private Token token;
+
+    /**
      * Constructs a new DFA state.
      * @param nfaStates The set of NFA states that this DFA state represents.
      */
@@ -48,6 +55,7 @@ public class DfaState {
         this.nfaStates = nfaStates;
         this.isFinal = false;
         this.transitions = new java.util.HashMap<>();
+        this.token = null;
     }
 
     /**
@@ -102,6 +110,26 @@ public class DfaState {
     }
 
     /**
+     * Sets the token for this state and marks it as final.
+     * Should only be called for final states.
+     */
+    public void setToken(Token newToken) {
+        this.isFinal = true; // Ensure the state is final
+        if (this.token == null || newToken.getPriority() < this.token.getPriority()) {
+            // Lower priority number means higher precedence (e.g., reserved words)
+            this.token = newToken;
+        }
+    }
+
+    /**
+     * Returns the token associated with this state.
+     * Returns null if the state is not final.
+     */
+    public Token getToken() {
+        return token;
+    }
+
+    /**
      * Two DfaStates are considered equal if they represent
      * the same set of NFA states.
      * @param obj The object to compare.
@@ -131,6 +159,6 @@ public class DfaState {
      */
     @Override
     public String toString() {
-        return "DfaState{id=" + id + ", isFinal=" + isFinal + "}";
+        return "DfaState{id=" + id + ", isFinal=" + isFinal + ", token=" + token + "}";
     }
 }

@@ -15,14 +15,31 @@ import com.compiler.lexer.nfa.Transition;
  */
 public class RegexParser {
 
+    private final String tokenType;
+
     public RegexParser() {
-        // Default constructor
+        this.tokenType = null; // default tokenType
+    }
+
+    /**
+     * Constructor for RegexParser with token type.
+     *
+     * @param tokenType The type of token this regex represents.
+     */
+    public RegexParser(String tokenType) {
+        this.tokenType = tokenType;
     }
 
     public NFA parse(String infixRegex) {
         // Convert infix regex to postfix using Shunting Yard algorithm
         String postfix = ShuntingYard.toPostfix(infixRegex);
-        return buildNfaFromPostfix(postfix);
+        NFA nfa = buildNfaFromPostfix(postfix);
+
+        // Assign tokenType to the final state
+        nfa.endState.isFinal = true;
+        nfa.endState.setTokenType(tokenType);
+
+        return nfa;
     }
 
     private NFA buildNfaFromPostfix(String postfixRegex) {
@@ -68,6 +85,7 @@ public class RegexParser {
 
         // Keep original NFA end as final
         nfa.endState.isFinal = true;
+        nfa.endState.setTokenType(tokenType);
 
         // Push NFA with new start, original end
         stack.push(new NFA(start, nfa.endState));
@@ -87,6 +105,7 @@ public class RegexParser {
         nfa.endState.transitions.add(new Transition(null, end));
 
         end.isFinal = true;
+        end.setTokenType(tokenType);
 
         stack.push(new NFA(start, end));
     }
@@ -97,6 +116,7 @@ public class RegexParser {
 
         start.transitions.add(new Transition(c, end));
         end.isFinal = true;
+        end.setTokenType(tokenType);
 
         return new NFA(start, end);
     }
@@ -106,6 +126,7 @@ public class RegexParser {
         NFA nfa1 = stack.pop();
 
         nfa1.endState.isFinal = false;
+        nfa1.endState.setTokenType(null);
         nfa1.endState.transitions.add(new Transition(null, nfa2.startState));
 
         stack.push(new NFA(nfa1.startState, nfa2.endState));
@@ -122,12 +143,15 @@ public class RegexParser {
         start.transitions.add(new Transition(null, nfa2.startState));
 
         nfa1.endState.isFinal = false;
+        nfa1.endState.setTokenType(null);
         nfa2.endState.isFinal = false;
+        nfa2.endState.setTokenType(null);
 
         nfa1.endState.transitions.add(new Transition(null, end));
         nfa2.endState.transitions.add(new Transition(null, end));
 
         end.isFinal = true;
+        end.setTokenType(tokenType);
 
         stack.push(new NFA(start, end));
     }
@@ -145,7 +169,10 @@ public class RegexParser {
         nfa.endState.transitions.add(new Transition(null, end));
 
         nfa.endState.isFinal = false;
+        nfa.endState.setTokenType(null);
+
         end.isFinal = true;
+        end.setTokenType(tokenType);
 
         stack.push(new NFA(start, end));
     }
